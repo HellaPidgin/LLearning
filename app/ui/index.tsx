@@ -149,7 +149,7 @@ const index = () => {
   const [optionalValues, setOptionalValues] = useState<String[]>([]);
   const [answerValue, setAnswerValue] = useState<number | undefined>();
   const [missingValueIndex, setMissingValueIndex] = useState<number | undefined>();
-  const [selectedTextIndex, setSelectedTextIndex] = useState<number | undefined>(2);
+  const [selectedTextIndex, setSelectedTextIndex] = useState<number | undefined>();
 
   const courseListener = async () => {
     const db = getDatabase();
