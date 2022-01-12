@@ -79,17 +79,37 @@ const MessageBoxSpace = styled.View`
     width: 50px;
     height: 50px;
 `
+const AnswerValueContainer = styled.TouchableOpacity`
+  padding: 10px;
+  border-radius: 15px;
+  background-color: ${colors.Eggshell};
+  margin: 5px;
+  margin-top: 55px;
+`;
+const AnswerValueText = styled.Text`
+  color: ${colors.Independence};
+  font-weight: bold;
+`;
+
 const MainLessonMissingValue = styled.View`
   border-bottom-width: 1px;
-  width: 20px;
+  width: 40px;
   margin: 5px;
   height: ${MAIN_LESSON_FONT_SIZE + 55};
   border-color: ${colors.Eggshell};
 `;
-const OptionalValueContainer = styled.View`
+const OptionalValueContainer = styled.TouchableOpacity`
   padding: 10px;
   border-radius: 15px;
   background-color: ${colors.Eggshell};
+  margin: 5px;
+`;
+const OptionalValueEmpty = styled.View`
+  padding: 10px;
+  border-radius: 15px;
+  height: 40px;
+  width: 100px;
+  background-color: ${colors.TerraCotta};
   margin: 5px;
 `;
 const OptionalValueText = styled.Text`
@@ -124,11 +144,10 @@ const ContinueContainerButtonText = styled.Text`
 `;
 
 const index = () => {
-  const [missingTextSize, setMissingTextSize] = useState<number>(0);
   const [translationText, setTranslationText] = useState<String[]>([]);
   const [mainText, setMainText] = useState<String[]>([]);
   const [optionalValues, setOptionalValues] = useState<String[]>([]);
-  const [answerValue, setAnswerValue] = useState<String | undefined>();
+  const [answerValue, setAnswerValue] = useState<number | undefined>();
   const [missingValueIndex, setMissingValueIndex] = useState<number | undefined>();
   const [selectedTextIndex, setSelectedTextIndex] = useState<number | undefined>(2);
 
@@ -172,14 +191,25 @@ const index = () => {
             {mainText.map((text, index) => (
               <>
                 {index === missingValueIndex ? (
-                  <MainLessonMissingValue />
-                ) : (
+                  <>
+                  {answerValue !== undefined? <AnswerValueContainer onPress={() => setAnswerValue(undefined)}>
+                  <AnswerValueText>{optionalValues[answerValue]}</AnswerValueText>
+                </AnswerValueContainer>:<MainLessonMissingValue />}
+                </>) : (
                   <View>
-                      {selectedTextIndex === index? <MessageBoxImage source={MessageBox}>
-<OptionalValueText>{translationText[index]}</OptionalValueText>
-                      </MessageBoxImage>: <MessageBoxSpace />}
-                      
-                    <MainLessonText onPress={() => setSelectedTextIndex(index)}>{text}</MainLessonText>
+                    {selectedTextIndex === index ? (
+                      <MessageBoxImage source={MessageBox}>
+                        <OptionalValueText>
+                          {translationText[index]}
+                        </OptionalValueText>
+                      </MessageBoxImage>
+                    ) : (
+                      <MessageBoxSpace />
+                    )}
+
+                    <MainLessonText onPress={() => setSelectedTextIndex(index)}>
+                      {text}
+                    </MainLessonText>
                   </View>
                 )}
               </>
@@ -190,9 +220,14 @@ const index = () => {
             contentContainerStyle={{ alignItems: "center" }}
             data={optionalValues}
             renderItem={(item) => (
-              <OptionalValueContainer>
-                <OptionalValueText>{item.item}</OptionalValueText>
-              </OptionalValueContainer>
+              <>
+              {answerValue !== item.index?
+                <OptionalValueContainer onPress={() => setAnswerValue(item.index)}>
+                  <OptionalValueText>{item.item}</OptionalValueText>
+                </OptionalValueContainer>:
+                <OptionalValueEmpty />
+                }
+              </>
             )}
             numColumns={2}
           />
