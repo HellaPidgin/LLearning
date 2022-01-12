@@ -1,43 +1,30 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
-import { config } from './config';
-import {initializeApp} from "firebase/app";
-import { getDatabase, ref, onValue, Database } from "firebase/database";
-import { useEffect } from 'react';
 
-initializeApp(config);
+import React from 'react';
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import UI from "./app/ui";
+import { AppProvider } from './app/provider';
 
+
+const Stack = createNativeStackNavigator();
 
 export default function App() {
-  const courseListener = async () => {
-    const db = getDatabase();
-    console.log("Hello World")
-    const reference = ref(db, "course");
-    //console.log(reference)
-    await onValue(reference, (snapshot) => {
-      console.log(snapshot)
-      console.log(snapshot.val());
-    });
-  };
-
-
-  useEffect(() => {
-    courseListener();
-  }, [])
   
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <AppProvider>
+      <NavigationContainer>
+        <Stack.Navigator
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
+          <Stack.Screen
+            name="Home"
+            component={UI}
+            options={{ title: "Welcome" }}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </AppProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
