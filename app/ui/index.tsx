@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 // React Native Dependencies
 import { View, Text, FlatList, ImageBackground } from "react-native";
 import styled from "styled-components/native";
@@ -9,8 +9,9 @@ import { getDatabase, onValue, ref } from "firebase/database";
 initializeApp(config);
 
 import { Ionicons } from "@expo/vector-icons";
-const MessageBox = require("../images/messageBox.png"); 
+const MessageBox = require("../images/messageBox.png");
 import { colors } from "../utils/colors";
+import { AppProviderContext } from "../provider";
 // Quiz UI
 // Wipe UI
 // Quiz Updated UI
@@ -41,17 +42,18 @@ const LessonInteractiveContainer = styled.View`
 const LessonPrompt = styled.Text`
   font-size: 12px;
   color: ${colors.Eggshell};
+  margin-top: 20px;
 `;
 
 const LessonTextAlignment = styled.View`
-    flex-direction: row;
-    justify-content: center;
-    margin-bottom: 40px;
-`
+  flex-direction: row;
+  justify-content: center;
+`;
 const LessonTranslation = styled.Text`
-  font-size: 18px;
+  font-size: 23px;
   color: ${colors.Eggshell};
   padding: 2px;
+  margin-top: 30px;
 `;
 const LessonTranslationHighlightedText = styled.Text`
   font-weight: bold;
@@ -64,27 +66,29 @@ const MainLessonText = styled.Text`
   border-radius: 1px;
   border-color: ${colors.Eggshell}
   margin: 2px;
+  margin-bottom: 30px;
   font-size: ${MAIN_LESSON_FONT_SIZE}px;
   color: ${colors.Eggshell};
 `;
 
 const MessageBoxImage = styled.ImageBackground`
-    width: 50px;
-    height: 50px;
-    justify-content:center;
-    align-items: center;
-    padding-bottom:10px;
-`
+  width: 50px;
+  height: 50px;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 10px;
+`;
 const MessageBoxSpace = styled.View`
-    width: 50px;
-    height: 50px;
-`
+  width: 50px;
+  height: 50px;
+`;
 const AnswerValueContainer = styled.TouchableOpacity`
   padding: 10px;
   border-radius: 15px;
   background-color: ${colors.Eggshell};
   margin: 5px;
   margin-top: 55px;
+  margin-bottom: 30px;
 `;
 const AnswerValueText = styled.Text`
   color: ${colors.Independence};
@@ -123,10 +127,18 @@ const LessonPanelContinueContainer = styled.View`
   border-top-right-radius: ${BORDER_RADIUS_VALUE};
   justify-content: center;
   align-items: center;
-
 `;
+
+const ContinueFlagAndTextContainer = styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 80%;
+  padding:5px;
+`
 const ContinueContainerText = styled.Text`
   color: ${colors.Eggshell};
+  font-weight: bold;
 `;
 
 const ContinueContainerButton = styled.TouchableOpacity`
@@ -135,7 +147,7 @@ const ContinueContainerButton = styled.TouchableOpacity`
   width: 80%;
   background-color: ${colors.Eggshell};
   align-items: center;
-  justify-content:center;
+  justify-content: center;
 `;
 const ContinueContainerButtonText = styled.Text`
   color: ${colors.Independence};
@@ -144,16 +156,23 @@ const ContinueContainerButtonText = styled.Text`
 `;
 
 const index = () => {
+  // State management dependencies section
   const [translationText, setTranslationText] = useState<String[]>([]);
   const [mainText, setMainText] = useState<String[]>([]);
   const [optionalValues, setOptionalValues] = useState<String[]>([]);
   const [answerValue, setAnswerValue] = useState<number | undefined>();
-  const [missingValueIndex, setMissingValueIndex] = useState<number | undefined>();
-  const [selectedTextIndex, setSelectedTextIndex] = useState<number | undefined>();
+  const [missingValueIndex, setMissingValueIndex] = useState<number>(0);
+  const [selectedTextIndex, setSelectedTextIndex] = useState<
+    number | undefined
+  >();
+  const [correctIndicatorText, setCorrectIndicatorText] = useState<string>("");
+  const [isCorrectIndicator, setIsCorrectIndicatior] = useState<boolean | undefined>();
+
+  var isAnswerUndefined = answerValue === undefined ? true : false;
+  const globalAppState = useContext(AppProviderContext);
 
   const courseListener = async () => {
     const db = getDatabase();
-    console.log("Hello World");
     const reference = ref(db, "course");
     //console.log(reference)
     await onValue(reference, (snapshot) => {
@@ -164,9 +183,27 @@ const index = () => {
     });
   };
 
+  const checkAnswer = (answerIndex: number) => {
+    console.log("check answer")
+    const isAnswerCorrect = optionalValues[answerIndex] === mainText[missingValueIndex];
+    if(isAnswerCorrect){
+      globalAppState.setScore(globalAppState.score+1)
+      setIsCorrectIndicatior(true);
+      setCorrectIndicatorText("Great Job!")
+    }
+    else {
+      setIsCorrectIndicatior(false);
+      setCorrectIndicatorText(`Answer: ${mainText[missingValueIndex]}`)
+    }
+  };
+
+const newQuestion = () => {
+  
+}
+
   useEffect(() => {
-    courseListener()
-  }, [])
+    courseListener();
+  }, []);
 
   return (
     <Container>
@@ -192,10 +229,19 @@ const index = () => {
               <>
                 {index === missingValueIndex ? (
                   <>
-                  {answerValue !== undefined? <AnswerValueContainer onPress={() => setAnswerValue(undefined)}>
-                  <AnswerValueText>{optionalValues[answerValue]}</AnswerValueText>
-                </AnswerValueContainer>:<MainLessonMissingValue />}
-                </>) : (
+                    {answerValue !== undefined ? (
+                      <AnswerValueContainer
+                        onPress={() => setAnswerValue(undefined)}
+                      >
+                        <AnswerValueText>
+                          {optionalValues[answerValue]}
+                        </AnswerValueText>
+                      </AnswerValueContainer>
+                    ) : (
+                      <MainLessonMissingValue />
+                    )}
+                  </>
+                ) : (
                   <View>
                     {selectedTextIndex === index ? (
                       <MessageBoxImage source={MessageBox}>
@@ -221,21 +267,49 @@ const index = () => {
             data={optionalValues}
             renderItem={(item) => (
               <>
-              {answerValue !== item.index?
-                <OptionalValueContainer onPress={() => setAnswerValue(item.index)}>
-                  <OptionalValueText>{item.item}</OptionalValueText>
-                </OptionalValueContainer>:
-                <OptionalValueEmpty />
-                }
+                {answerValue !== item.index ? (
+                  <OptionalValueContainer
+                    onPress={() => setAnswerValue(item.index)}
+                  >
+                    <OptionalValueText>{item.item}</OptionalValueText>
+                  </OptionalValueContainer>
+                ) : (
+                  <OptionalValueEmpty />
+                )}
               </>
             )}
             numColumns={2}
           />
         </LessonInteractiveContainer>
-        <LessonPanelContinueContainer>
-          <ContinueContainerButton>
+        <LessonPanelContinueContainer
+          style={{
+            backgroundColor:
+              isCorrectIndicator !== undefined
+                ? isCorrectIndicator === false
+                  ? colors.TerraCotta
+                  : colors.GreenSheen
+                : "rgba(0,0,0,0)",
+          }}
+        >
+          {isCorrectIndicator !== undefined ? (
+            <ContinueFlagAndTextContainer>
+              <ContinueContainerText>
+                {correctIndicatorText}
+              </ContinueContainerText>
+              <Ionicons name="flag-outline" size={20} color={colors.Eggshell} />
+            </ContinueFlagAndTextContainer>
+          ) : null}
+          <ContinueContainerButton
+            disabled={isAnswerUndefined}
+            onPress={isCorrectIndicator? ()=> newQuestion():() => checkAnswer(answerValue!)}
+            style={{
+              backgroundColor: isAnswerUndefined
+                ? colors.TerraCotta
+                : colors.Eggshell,
+            }}
+          >
             <ContinueContainerButtonText>
-              {answerValue === undefined ? "CONTINUE" : "CHECK YOUR ANSWER"}
+              {isAnswerUndefined ? "CONTINUE" : isCorrectIndicator?"CONTINUE":"CHECK YOUR ANSWER"}
             </ContinueContainerButtonText>
           </ContinueContainerButton>
         </LessonPanelContinueContainer>

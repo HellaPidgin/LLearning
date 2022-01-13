@@ -5,6 +5,8 @@ import { AppStateDefaults} from "./types";
 const appDefaults: AppStateDefaults = {
   score: 0,
   setScore: () => {},
+  questionCounter: 0,
+  setQuestionCounter: () => {},
 };
 export const AppProviderContext = createContext(appDefaults);
 export const AppProvider = (props: {
@@ -15,11 +17,14 @@ export const AppProvider = (props: {
     | React.ReactPortal;
 }) => {
   const [score, setScore] = useState(0);
+  const [questionCounter, setQuestionCounter] = useState(0);
   return (
     <AppProviderContext.Provider
       value={{
         score,
-        setScore
+        setScore,
+        questionCounter,
+        setQuestionCounter
       }}
     >
       {props.children}
