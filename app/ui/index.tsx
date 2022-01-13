@@ -155,7 +155,7 @@ const ContinueContainerButtonText = styled.Text`
   font-weight: bold;
 `;
 
-const index = (props) => {
+const index = (props: { navigation: { navigate: (arg0: string) => void; }; }) => {
   // State management dependencies section
   const [translationText, setTranslationText] = useState<String[]>([]);
   const [mainText, setMainText] = useState<String[]>([]);
