@@ -4,6 +4,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import UI from "./app/ui";
 import { AppProvider } from './app/provider';
+import QuizComplete from './app/ui/quizComplete';
 
 
 const Stack = createNativeStackNavigator();
@@ -21,7 +22,10 @@ export default function App() {
           <Stack.Screen
             name="Home"
             component={UI}
-            options={{ title: "Welcome" }}
+          />
+          <Stack.Screen
+            name="Complete"
+            component={QuizComplete}
           />
         </Stack.Navigator>
       </NavigationContainer>

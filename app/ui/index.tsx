@@ -19,15 +19,15 @@ import { AppProviderContext } from "../provider";
 // React Native Styled Component Dependencies
 const BORDER_RADIUS_VALUE = "20px";
 const MAIN_LESSON_FONT_SIZE = 20;
-const Container = styled.View`
+export const Container = styled.View`
   flex: 1;
   background-color: ${colors.GreenSheen};
 `;
-const ContainerWhiteSpace = styled.View`
+export const ContainerWhiteSpace = styled.View`
   flex: 1;
 `;
 
-const LessonPanel = styled.View`
+export const LessonPanel = styled.View`
   justify-content: space-between;
   flex: 9;
   border-top-left-radius: ${BORDER_RADIUS_VALUE};
@@ -99,7 +99,7 @@ const MainLessonMissingValue = styled.View`
   border-bottom-width: 1px;
   width: 40px;
   margin: 5px;
-  height: ${MAIN_LESSON_FONT_SIZE + 55};
+  height: ${MAIN_LESSON_FONT_SIZE + 55}px;
   border-color: ${colors.Eggshell};
 `;
 const OptionalValueContainer = styled.TouchableOpacity`
@@ -155,7 +155,7 @@ const ContinueContainerButtonText = styled.Text`
   font-weight: bold;
 `;
 
-const index = () => {
+const index = (props) => {
   // State management dependencies section
   const [translationText, setTranslationText] = useState<String[]>([]);
   const [mainText, setMainText] = useState<String[]>([]);
@@ -171,9 +171,9 @@ const index = () => {
   var isAnswerUndefined = answerValue === undefined ? true : false;
   const globalAppState = useContext(AppProviderContext);
 
-  const courseListener = async () => {
+  const courseListener = async (value : number) => {
     const db = getDatabase();
-    const reference = ref(db, "course");
+    const reference = ref(db, "course/" + value);
     //console.log(reference)
     await onValue(reference, (snapshot) => {
       setMissingValueIndex(snapshot.val().missingValueIndex);
@@ -182,6 +182,10 @@ const index = () => {
       setMainText(snapshot.val().words);
     });
   };
+
+  useEffect(() => {
+    courseListener(0);
+  }, []);
 
   const checkAnswer = (answerIndex: number) => {
     console.log("check answer")
@@ -198,12 +202,20 @@ const index = () => {
   };
 
 const newQuestion = () => {
-  
+  setAnswerValue(undefined)
+  setIsCorrectIndicatior(undefined);
+  globalAppState.setQuestionCounter(globalAppState.questionCounter + 1);
+
+  if(globalAppState.questionCounter < 4){
+    courseListener(globalAppState.questionCounter + 1);
+  } else {
+    // navigate to quizComplete view.
+    props.navigation.navigate("Complete")
+  }
+
 }
 
-  useEffect(() => {
-    courseListener();
-  }, []);
+  
 
   return (
     <Container>
@@ -213,7 +225,7 @@ const newQuestion = () => {
           <LessonPrompt>Fill in the missing word</LessonPrompt>
           <LessonTextAlignment>
             {translationText.map((text, index) => (
-              <LessonTranslation>
+              <LessonTranslation key={text + index.toString()}>
                 {index === missingValueIndex ? (
                   <LessonTranslationHighlightedText>
                     {text}
@@ -301,7 +313,7 @@ const newQuestion = () => {
           ) : null}
           <ContinueContainerButton
             disabled={isAnswerUndefined}
-            onPress={isCorrectIndicator? ()=> newQuestion():() => checkAnswer(answerValue!)}
+            onPress={isCorrectIndicator !== undefined? ()=> newQuestion():() => checkAnswer(answerValue!)}
             style={{
               backgroundColor: isAnswerUndefined
                 ? colors.TerraCotta
@@ -309,7 +321,7 @@ const newQuestion = () => {
             }}
           >
             <ContinueContainerButtonText>
-              {isAnswerUndefined ? "CONTINUE" : isCorrectIndicator?"CONTINUE":"CHECK YOUR ANSWER"}
+              {isAnswerUndefined ? "CONTINUE" : isCorrectIndicator!== undefined ? "CONTINUE":"CHECK YOUR ANSWER"}
             </ContinueContainerButtonText>
           </ContinueContainerButton>
         </LessonPanelContinueContainer>
