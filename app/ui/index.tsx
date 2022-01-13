@@ -12,9 +12,6 @@ import { Ionicons } from "@expo/vector-icons";
 const MessageBox = require("../images/messageBox.png");
 import { colors } from "../utils/colors";
 import { AppProviderContext } from "../provider";
-// Quiz UI
-// Wipe UI
-// Quiz Updated UI
 
 // React Native Styled Component Dependencies
 const BORDER_RADIUS_VALUE = "20px";
@@ -155,7 +152,7 @@ const ContinueContainerButtonText = styled.Text`
   font-weight: bold;
 `;
 
-const index = (props) => {
+const index = (props: { navigation: { navigate: (arg0: string) => void; }; }) => {
   // State management dependencies section
   const [translationText, setTranslationText] = useState<String[]>([]);
   const [mainText, setMainText] = useState<String[]>([]);
